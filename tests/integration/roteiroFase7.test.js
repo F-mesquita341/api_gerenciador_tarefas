@@ -126,7 +126,7 @@ describe('Roteiro de validação da Fase 7', () => {
       const idBloqueado = tarefaIds[LIMITE_TAREFAS_EM_ANDAMENTO];
       const resposta = await request(app).post(`/tarefas/${idBloqueado}/iniciar`);
 
-      expect(resposta.status).toBe(409);
+      expect(resposta.status).toBe(400);
       expect(resposta.body.erro).toMatch(/Limite atingido/i);
       expect(resposta.body.erro).toContain(String(LIMITE_TAREFAS_EM_ANDAMENTO));
 
@@ -173,7 +173,7 @@ describe('Roteiro de validação da Fase 7', () => {
     });
 
     it('recusa iniciar uma tarefa já concluída, mesmo com vaga disponível', async () => {
-      // Usa o Bruno justamente porque ele tem folga no limite: assim o 409 vem
+      // Usa o Bruno justamente porque ele tem folga no limite: assim o 400 vem
       // da transição inválida da entidade, e não da regra de capacidade.
       const criada = await request(app)
         .post('/tarefas')
@@ -184,7 +184,7 @@ describe('Roteiro de validação da Fase 7', () => {
 
       const resposta = await request(app).post(`/tarefas/${criada.body.id}/iniciar`);
 
-      expect(resposta.status).toBe(409);
+      expect(resposta.status).toBe(400);
       expect(resposta.body.erro).toMatch(/CONCLUIDA/);
     });
 
@@ -195,7 +195,7 @@ describe('Roteiro de validação da Fase 7', () => {
 
       const resposta = await request(app).post(`/tarefas/${criada.body.id}/concluir`);
 
-      expect(resposta.status).toBe(409);
+      expect(resposta.status).toBe(400);
       expect(resposta.body.erro).toMatch(/EM_ANDAMENTO/);
     });
   });

@@ -74,7 +74,7 @@ async function semear() {
   console.log('');
   console.log('Para ver o bloqueio da regra de negócio, suba a API (npm start) e chame:');
   console.log(`  POST http://localhost:3000/tarefas/${pendentes[0].id}/iniciar`);
-  console.log('  -> deve responder 409 com a mensagem de limite atingido.');
+  console.log('  -> deve responder 400 com a mensagem de limite atingido.');
 }
 
 semear()

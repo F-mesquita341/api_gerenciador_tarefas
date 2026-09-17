@@ -141,8 +141,8 @@ etapas — concluir algo que nunca foi iniciado, reiniciar algo já concluído �
 | Status | Quando acontece                                                                |
 | ------ | ------------------------------------------------------------------------------ |
 | `400`  | Dado inválido: título vazio, e-mail malformado, e-mail já cadastrado           |
+| `400`  | Regra de negócio violada: limite de 5 atingido ou transição de status inválida |
 | `404`  | Tarefa ou usuário inexistente                                                  |
-| `409`  | Regra de negócio violada: limite de 5 atingido ou transição de status inválida |
 | `500`  | Erro inesperado                                                                |
 
 Todos os erros respondem no mesmo formato:
@@ -183,7 +183,7 @@ Ao receber `POST /tarefas/:id/iniciar`, o serviço:
 1. localiza a tarefa (404 se não existir) — é dela que sai o usuário dono;
 2. pergunta ao repositório **quantas tarefas daquele usuário estão `EM_ANDAMENTO`**
    (`contarPorUsuarioEStatus`);
-3. se já houver **5 ou mais**, lança `RegraDeNegocioError` e a API responde **409**;
+3. se já houver **5 ou mais**, lança `RegraDeNegocioError` e a API responde **400**;
 4. caso contrário, chama `tarefa.iniciar()` — a entidade valida a transição — e manda o
    repositório salvar.
 
@@ -241,7 +241,7 @@ sobrando, e imprime no terminal a requisição exata que demonstra o bloqueio.
 | 2   | Criar tarefas do usuário | `POST /tarefas`             | 201, `status: "PENDENTE"`           |
 | 3   | Listar tarefas           | `GET /tarefas`              | 200 com a lista                     |
 | 4   | Iniciar 5 tarefas        | `POST /tarefas/:id/iniciar` | 200, `status: "EM_ANDAMENTO"`       |
-| 4b  | Iniciar a 6ª             | `POST /tarefas/:id/iniciar` | **409 com a mensagem de limite**    |
+| 4b  | Iniciar a 6ª             | `POST /tarefas/:id/iniciar` | **400 com a mensagem de limite**    |
 | 5   | Alterar o texto          | `PUT /tarefas/:id`          | 200 com o título novo               |
 | 5b  | Excluir                  | `DELETE /tarefas/:id`       | 204, e o `GET` seguinte devolve 404 |
 

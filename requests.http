@@ -144,7 +144,7 @@ GET {{baseUrl}}/usuarios
 ###############################################################################
 # PASSO 4 — POST: regra de negócio (limite de 5 em andamento)
 # As cinco primeiras passam para EM_ANDAMENTO (200).
-# A SEXTA é barrada com 409 e a mensagem de limite atingido.
+# A SEXTA é barrada com 400 e a mensagem de limite atingido.
 ###############################################################################
 
 ### 1 de 5                                                (esperado: 200 EM_ANDAMENTO)
@@ -162,7 +162,7 @@ POST {{baseUrl}}/tarefas/{{tarefa4.response.body.id}}/iniciar
 ### 5 de 5                                                (esperado: 200 EM_ANDAMENTO)
 POST {{baseUrl}}/tarefas/{{tarefa5.response.body.id}}/iniciar
 
-### >>> SEXTA TAREFA: BLOQUEIO POR LIMITE <<<             (esperado: 409)
+### >>> SEXTA TAREFA: BLOQUEIO POR LIMITE <<<             (esperado: 400)
 # {
 #   "erro": "Limite atingido: o usuário 1 já possui 5 tarefas com status
 #            EM_ANDAMENTO e o máximo permitido é 5. ..."
@@ -178,7 +178,7 @@ POST {{baseUrl}}/tarefas/{{tarefa1.response.body.id}}/concluir
 ### Agora a sexta tarefa consegue iniciar                 (esperado: 200 EM_ANDAMENTO)
 POST {{baseUrl}}/tarefas/{{tarefa6.response.body.id}}/iniciar
 
-### Erro esperado: iniciar tarefa já concluída            (esperado: 409)
+### Erro esperado: iniciar tarefa já concluída            (esperado: 400)
 POST {{baseUrl}}/tarefas/{{tarefa1.response.body.id}}/iniciar
 
 ### Erro esperado: iniciar tarefa inexistente             (esperado: 404)

@@ -10,7 +10,7 @@ const RegraDeNegocioError = require('../../domain/errors/RegraDeNegocioError');
  *
  *   ValidacaoError      -> 400 Bad Request
  *   NaoEncontradoError  -> 404 Not Found
- *   RegraDeNegocioError -> 409 Conflict  (inclui o bloqueio por limite atingido)
+ *   RegraDeNegocioError -> 400 Bad Request  (inclui o bloqueio por limite atingido)
  *   qualquer outro      -> 500 Internal Server Error
  */
 function tratarErro(erro, res) {
@@ -22,8 +22,12 @@ function tratarErro(erro, res) {
     return res.status(404).json({ erro: erro.message });
   }
 
+  // Violação de regra de negócio (limite atingido, transição de status inválida).
+  // O ramo fica separado do ValidacaoError de propósito: apesar de hoje os dois
+  // responderem 400, são situações diferentes, e trocar o código aqui é uma
+  // alteração de uma linha só.
   if (erro instanceof RegraDeNegocioError) {
-    return res.status(409).json({ erro: erro.message });
+    return res.status(400).json({ erro: erro.message });
   }
 
   console.error('[erro inesperado]', erro);
