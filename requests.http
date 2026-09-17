@@ -1,0 +1,211 @@
+###############################################################################
+# Roteiro de validação da Fase 7 — Gerenciador de Tarefas
+#
+# Como usar:
+#   1. npm start          (em outro terminal, deixe a API rodando)
+#   2. abra este arquivo no VS Code com a extensão "REST Client"
+#   3. clique em "Send Request" acima de cada bloco, de cima para baixo
+#
+# Os IDs são capturados automaticamente das respostas (@name), então basta
+# seguir a ordem. Se quiser começar do zero, pare a API, apague o
+# database.sqlite e suba novamente.
+###############################################################################
+
+@baseUrl = http://localhost:3000
+@contentType = application/json
+
+### Sanidade: a API está no ar?
+GET {{baseUrl}}/
+
+
+###############################################################################
+# PASSO 1 — POST: criação de um usuário válido            (esperado: 201)
+###############################################################################
+
+# @name criarUsuario
+POST {{baseUrl}}/usuarios
+Content-Type: {{contentType}}
+
+{
+  "nome": "Ana Souza",
+  "email": "ana.souza@exemplo.com"
+}
+
+### Guarda o id do usuário recém-criado
+@usuarioId = {{criarUsuario.response.body.id}}
+
+### Erro esperado: e-mail duplicado                       (esperado: 400)
+POST {{baseUrl}}/usuarios
+Content-Type: {{contentType}}
+
+{
+  "nome": "Outra Ana",
+  "email": "ana.souza@exemplo.com"
+}
+
+
+###############################################################################
+# PASSO 2 — POST: tarefas vinculadas a esse usuário        (esperado: 201)
+# Toda tarefa nasce com status PENDENTE.
+###############################################################################
+
+# @name tarefa1
+POST {{baseUrl}}/tarefas
+Content-Type: {{contentType}}
+
+{
+  "titulo": "Levantar requisitos do sistema",
+  "descricao": "Conversar com o cliente e registrar as necessidades",
+  "usuarioId": {{usuarioId}}
+}
+
+###
+# @name tarefa2
+POST {{baseUrl}}/tarefas
+Content-Type: {{contentType}}
+
+{
+  "titulo": "Modelar o banco de dados",
+  "usuarioId": {{usuarioId}}
+}
+
+###
+# @name tarefa3
+POST {{baseUrl}}/tarefas
+Content-Type: {{contentType}}
+
+{
+  "titulo": "Implementar a camada de domínio",
+  "usuarioId": {{usuarioId}}
+}
+
+###
+# @name tarefa4
+POST {{baseUrl}}/tarefas
+Content-Type: {{contentType}}
+
+{
+  "titulo": "Escrever os casos de uso",
+  "usuarioId": {{usuarioId}}
+}
+
+###
+# @name tarefa5
+POST {{baseUrl}}/tarefas
+Content-Type: {{contentType}}
+
+{
+  "titulo": "Montar os controllers e as rotas",
+  "usuarioId": {{usuarioId}}
+}
+
+###
+# @name tarefa6
+POST {{baseUrl}}/tarefas
+Content-Type: {{contentType}}
+
+{
+  "titulo": "Preparar a apresentação em sala",
+  "usuarioId": {{usuarioId}}
+}
+
+### Erro esperado: tarefa sem título                      (esperado: 400)
+POST {{baseUrl}}/tarefas
+Content-Type: {{contentType}}
+
+{
+  "descricao": "Esqueci o título",
+  "usuarioId": {{usuarioId}}
+}
+
+### Erro esperado: usuário inexistente                    (esperado: 404)
+POST {{baseUrl}}/tarefas
+Content-Type: {{contentType}}
+
+{
+  "titulo": "Tarefa sem dono",
+  "usuarioId": 9999
+}
+
+
+###############################################################################
+# PASSO 3 — GET: listagem geral das tarefas                (esperado: 200)
+###############################################################################
+
+GET {{baseUrl}}/tarefas
+
+### Listagem apenas das tarefas de um usuário             (esperado: 200)
+GET {{baseUrl}}/usuarios/{{usuarioId}}/tarefas
+
+### Listagem de usuários                                  (esperado: 200)
+GET {{baseUrl}}/usuarios
+
+
+###############################################################################
+# PASSO 4 — POST: regra de negócio (limite de 5 em andamento)
+# As cinco primeiras passam para EM_ANDAMENTO (200).
+# A SEXTA é barrada com 409 e a mensagem de limite atingido.
+###############################################################################
+
+### 1 de 5                                                (esperado: 200 EM_ANDAMENTO)
+POST {{baseUrl}}/tarefas/{{tarefa1.response.body.id}}/iniciar
+
+### 2 de 5                                                (esperado: 200 EM_ANDAMENTO)
+POST {{baseUrl}}/tarefas/{{tarefa2.response.body.id}}/iniciar
+
+### 3 de 5                                                (esperado: 200 EM_ANDAMENTO)
+POST {{baseUrl}}/tarefas/{{tarefa3.response.body.id}}/iniciar
+
+### 4 de 5                                                (esperado: 200 EM_ANDAMENTO)
+POST {{baseUrl}}/tarefas/{{tarefa4.response.body.id}}/iniciar
+
+### 5 de 5                                                (esperado: 200 EM_ANDAMENTO)
+POST {{baseUrl}}/tarefas/{{tarefa5.response.body.id}}/iniciar
+
+### >>> SEXTA TAREFA: BLOQUEIO POR LIMITE <<<             (esperado: 409)
+# {
+#   "erro": "Limite atingido: o usuário 1 já possui 5 tarefas com status
+#            EM_ANDAMENTO e o máximo permitido é 5. ..."
+# }
+POST {{baseUrl}}/tarefas/{{tarefa6.response.body.id}}/iniciar
+
+### Confirma que a tarefa bloqueada continua PENDENTE     (esperado: 200 PENDENTE)
+GET {{baseUrl}}/tarefas/{{tarefa6.response.body.id}}
+
+### Concluindo uma tarefa, uma vaga é liberada            (esperado: 200 CONCLUIDA)
+POST {{baseUrl}}/tarefas/{{tarefa1.response.body.id}}/concluir
+
+### Agora a sexta tarefa consegue iniciar                 (esperado: 200 EM_ANDAMENTO)
+POST {{baseUrl}}/tarefas/{{tarefa6.response.body.id}}/iniciar
+
+### Erro esperado: iniciar tarefa já concluída            (esperado: 409)
+POST {{baseUrl}}/tarefas/{{tarefa1.response.body.id}}/iniciar
+
+### Erro esperado: iniciar tarefa inexistente             (esperado: 404)
+POST {{baseUrl}}/tarefas/9999/iniciar
+
+
+###############################################################################
+# PASSO 5 — PUT e DELETE                                   (esperado: 200 e 204)
+###############################################################################
+
+### Altera o texto da tarefa                              (esperado: 200)
+PUT {{baseUrl}}/tarefas/{{tarefa6.response.body.id}}
+Content-Type: {{contentType}}
+
+{
+  "titulo": "Preparar a apresentação em sala - REVISADO",
+  "descricao": "Slides + demonstração ao vivo da API"
+}
+
+### Confirma a alteração                                  (esperado: 200)
+GET {{baseUrl}}/tarefas/{{tarefa6.response.body.id}}
+
+### Apaga a tarefa                                        (esperado: 204 sem corpo)
+DELETE {{baseUrl}}/tarefas/{{tarefa6.response.body.id}}
+
+### Confirma que ela sumiu do banco                       (esperado: 404)
+GET {{baseUrl}}/tarefas/{{tarefa6.response.body.id}}
+
+### Erro esperado: apagar tarefa inexistente              (esperado: 404)
+DELETE {{baseUrl}}/tarefas/9999

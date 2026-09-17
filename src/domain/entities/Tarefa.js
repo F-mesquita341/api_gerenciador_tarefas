@@ -31,7 +31,8 @@ class Tarefa {
 
     this.id = id;
     this.titulo = String(titulo).trim();
-    this.descricao = descricao === null || descricao === undefined ? null : String(descricao).trim();
+    this.descricao =
+      descricao === null || descricao === undefined ? null : String(descricao).trim();
     this.status = status;
     this.usuarioId = usuarioId;
   }
