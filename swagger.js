@@ -87,9 +87,35 @@ const doc = {
       },
     ],
 
+    // A tarefa logo após cada transição de estado. Existem em separado para
+    // que o exemplo mostrado em cada resposta tenha o status correto, em vez
+    // de repetir o PENDENTE da definição genérica.
+    TarefaEmAndamento: {
+      id: 1,
+      titulo: 'Modelar o banco de dados',
+      descricao: 'Definir as tabelas de usuários e tarefas',
+      status: 'EM_ANDAMENTO',
+      usuarioId: 1,
+    },
+
+    TarefaConcluida: {
+      id: 1,
+      titulo: 'Modelar o banco de dados',
+      descricao: 'Definir as tabelas de usuários e tarefas',
+      status: 'CONCLUIDA',
+      usuarioId: 1,
+    },
+
     // Erro de negócio ou de domínio: mensagem única.
     Erro: {
-      erro: 'Tarefa 42 não encontrada.',
+      erro: 'Mensagem descrevendo o que impediu a operação.',
+    },
+
+    // O bloqueio da regra de negócio, com a mensagem que a API devolve de fato.
+    ErroLimiteAtingido: {
+      erro:
+        'Limite atingido: o usuário 1 já possui 5 tarefas com status EM_ANDAMENTO ' +
+        'e o máximo permitido é 5. Conclua uma tarefa antes de iniciar outra.',
     },
 
     // Erro de validação estrutural (Zod): lista os campos reprovados.

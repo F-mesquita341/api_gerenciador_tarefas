@@ -44,10 +44,16 @@ describe('Roteiro de validação da Fase 7', () => {
     });
 
     it('recusa usuário sem e-mail com 400', async () => {
+      // Quem barra agora é o middleware do Zod, antes do controller, por isso a
+      // resposta traz o detalhamento por campo em vez de uma mensagem única.
       const resposta = await request(app).post('/usuarios').send({ nome: 'Sem email' });
 
       expect(resposta.status).toBe(400);
-      expect(resposta.body.erro).toMatch(/e-mail/i);
+      expect(resposta.body.erro).toBe('Dados inválidos.');
+      expect(resposta.body.detalhes).toContainEqual({
+        campo: 'email',
+        mensagem: 'O e-mail é obrigatório.',
+      });
     });
 
     it('recusa e-mail duplicado com 400', async () => {
@@ -81,7 +87,11 @@ describe('Roteiro de validação da Fase 7', () => {
       const resposta = await request(app).post('/tarefas').send({ usuarioId });
 
       expect(resposta.status).toBe(400);
-      expect(resposta.body.erro).toBe('O título da tarefa é obrigatório.');
+      expect(resposta.body.erro).toBe('Dados inválidos.');
+      expect(resposta.body.detalhes).toContainEqual({
+        campo: 'titulo',
+        mensagem: 'O título da tarefa é obrigatório.',
+      });
     });
 
     it('recusa tarefa de usuário inexistente com 404', async () => {

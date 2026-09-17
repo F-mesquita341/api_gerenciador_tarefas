@@ -39,92 +39,316 @@
     },
     "/usuarios/": {
       "get": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Lista todos os usuários",
         "description": "",
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "Lista de usuários.",
+            "schema": {
+              "$ref": "#/definitions/ListaDeUsuarios"
+            }
           }
         }
       },
       "post": {
-        "description": "",
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Cria um novo usuário",
+        "description": "Cadastra um usuário. O nome precisa ter no mínimo 3 caracteres e o e-mail precisa ser válido e único.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Dados do usuário: nome (mínimo 3 caracteres) e e-mail válido.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/NovoUsuario"
+            }
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "201": {
+            "description": "Usuário criado.",
+            "schema": {
+              "$ref": "#/definitions/Usuario"
+            }
+          },
+          "400": {
+            "description": "Falha de validação estrutural do corpo (Zod), ou e-mail já cadastrado.",
+            "schema": {
+              "$ref": "#/definitions/ErroDeValidacao"
+            }
           }
         }
       }
     },
     "/usuarios/{id}/tarefas": {
       "get": {
-        "description": "",
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Lista as tarefas de um usuário",
+        "description": "Útil para conferir quantas tarefas do usuário estão EM_ANDAMENTO antes de tentar iniciar outra.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Id do usuário"
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "Tarefas do usuário.",
+            "schema": {
+              "$ref": "#/definitions/ListaDeTarefas"
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
           }
         }
       }
     },
     "/tarefas/": {
       "get": {
-        "description": "",
+        "tags": [
+          "Tarefas"
+        ],
+        "summary": "Lista todas as tarefas",
+        "description": "Retorna todas as tarefas cadastradas, de todos os usuários, ordenadas por id.",
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "Lista de tarefas.",
+            "schema": {
+              "$ref": "#/definitions/ListaDeTarefas"
+            }
           }
         }
       },
       "post": {
-        "description": "",
+        "tags": [
+          "Tarefas"
+        ],
+        "summary": "Cria uma nova tarefa",
+        "description": "Cria uma tarefa vinculada a um usuário existente. Toda tarefa nasce com status PENDENTE.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Dados da tarefa: título (obrigatório), descrição (opcional) e o id do usuário dono (obrigatório).",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/NovaTarefa"
+            }
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "201": {
+            "description": "Tarefa criada.",
+            "schema": {
+              "$ref": "#/definitions/Tarefa"
+            }
+          },
+          "400": {
+            "description": "Falha de validação estrutural do corpo (Zod): título ausente ou usuarioId inválido.",
+            "schema": {
+              "$ref": "#/definitions/ErroDeValidacao"
+            }
+          },
+          "404": {
+            "description": "Usuário informado não existe.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
           }
         }
       }
     },
     "/tarefas/{id}": {
       "get": {
+        "tags": [
+          "Tarefas"
+        ],
+        "summary": "Busca uma tarefa pelo id",
         "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Id da tarefa"
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "Tarefa encontrada.",
+            "schema": {
+              "$ref": "#/definitions/Tarefa"
+            }
+          },
+          "404": {
+            "description": "Tarefa não encontrada.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
           }
         }
       },
       "put": {
-        "description": "",
+        "tags": [
+          "Tarefas"
+        ],
+        "summary": "Atualiza o texto de uma tarefa",
+        "description": "Altera título e/ou descrição. O status não é alterado por esta rota.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Id da tarefa"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Campos a alterar.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AtualizarTarefa"
+            }
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "Tarefa atualizada.",
+            "schema": {
+              "$ref": "#/definitions/Tarefa"
+            }
+          },
+          "400": {
+            "description": "Título inválido.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "Tarefa não encontrada.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
           }
         }
       },
       "delete": {
+        "tags": [
+          "Tarefas"
+        ],
+        "summary": "Exclui uma tarefa",
         "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Id da tarefa"
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "204": {
+            "description": "Tarefa excluída. Sem corpo na resposta."
+          },
+          "404": {
+            "description": "Tarefa não encontrada.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
           }
         }
       }
     },
     "/tarefas/{id}/iniciar": {
       "post": {
-        "description": "",
+        "tags": [
+          "Tarefas"
+        ],
+        "summary": "Inicia uma tarefa (PENDENTE -> EM_ANDAMENTO)",
+        "description": "REGRA DE NEGÓCIO: antes de iniciar, o serviço conta quantas tarefas do usuário dono já estão com status EM_ANDAMENTO. Se o total for igual ou superior a 5, a operação é barrada. Concluir uma tarefa libera uma vaga. O limite é contado por usuário, não globalmente.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Id da tarefa"
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "Tarefa iniciada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/TarefaEmAndamento"
+            }
+          },
+          "400": {
+            "description": "Retornado quando o usuário atinge o limite máximo de 5 tarefas com status EM_ANDAMENTO. Também cobre a transição inválida, quando a tarefa não está PENDENTE.",
+            "schema": {
+              "$ref": "#/definitions/ErroLimiteAtingido"
+            }
+          },
+          "404": {
+            "description": "Tarefa não encontrada.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
           }
         }
       }
     },
     "/tarefas/{id}/concluir": {
       "post": {
-        "description": "",
+        "tags": [
+          "Tarefas"
+        ],
+        "summary": "Conclui uma tarefa (EM_ANDAMENTO -> CONCLUIDA)",
+        "description": "Só é possível concluir uma tarefa que esteja EM_ANDAMENTO. Concluir libera uma vaga no limite de 5 tarefas em andamento do usuário.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Id da tarefa"
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "Tarefa concluída com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/TarefaConcluida"
+            }
+          },
+          "400": {
+            "description": "Transição inválida: a tarefa não está EM_ANDAMENTO.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
+          },
+          "404": {
+            "description": "Tarefa não encontrada.",
+            "schema": {
+              "$ref": "#/definitions/Erro"
+            }
           }
         }
       }
@@ -272,12 +496,71 @@
         }
       }
     },
+    "TarefaEmAndamento": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 1
+        },
+        "titulo": {
+          "type": "string",
+          "example": "Modelar o banco de dados"
+        },
+        "descricao": {
+          "type": "string",
+          "example": "Definir as tabelas de usuários e tarefas"
+        },
+        "status": {
+          "type": "string",
+          "example": "EM_ANDAMENTO"
+        },
+        "usuarioId": {
+          "type": "number",
+          "example": 1
+        }
+      }
+    },
+    "TarefaConcluida": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 1
+        },
+        "titulo": {
+          "type": "string",
+          "example": "Modelar o banco de dados"
+        },
+        "descricao": {
+          "type": "string",
+          "example": "Definir as tabelas de usuários e tarefas"
+        },
+        "status": {
+          "type": "string",
+          "example": "CONCLUIDA"
+        },
+        "usuarioId": {
+          "type": "number",
+          "example": 1
+        }
+      }
+    },
     "Erro": {
       "type": "object",
       "properties": {
         "erro": {
           "type": "string",
-          "example": "Tarefa 42 não encontrada."
+          "example": "Mensagem descrevendo o que impediu a operação."
+        }
+      }
+    },
+    "ErroLimiteAtingido": {
+      "type": "object",
+      "properties": {
+        "erro": {
+          "type": "string",
+          "example": "Limite atingido: o usuário 1 já possui 5 tarefas com status EM_ANDAMENTO e o máximo permitido é 5. Conclua uma tarefa antes de iniciar outra."
         }
       }
     },

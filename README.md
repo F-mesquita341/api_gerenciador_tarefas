@@ -21,18 +21,21 @@ npm start
 A API sobe em `http://localhost:3000`. O Sequelize sincroniza as tabelas **antes** de o servidor
 escutar a porta, então o arquivo `database.sqlite` é criado sozinho na primeira execução.
 
+A documentação interativa fica em **`http://localhost:3000/api-docs`**.
+
 ### Scripts disponíveis
 
-| Script               | O que faz                                          |
-| -------------------- | -------------------------------------------------- |
-| `npm start`          | Sobe a API                                         |
-| `npm run dev`        | Sobe a API com Nodemon (reinicia a cada alteração) |
-| `npm test`           | Roda a suíte Jest + Supertest                      |
-| `npm run test:watch` | Testes em modo observação                          |
-| `npm run seed`       | Recria o banco com dados de demonstração           |
-| `npm run lint`       | Verifica o código com ESLint                       |
-| `npm run lint:fix`   | Corrige automaticamente o que for possível         |
-| `npm run format`     | Formata o projeto com Prettier                     |
+| Script               | O que faz                                                     |
+| -------------------- | ------------------------------------------------------------- |
+| `npm start`          | Sobe a API                                                    |
+| `npm run dev`        | Regera a documentação e sobe a API com Nodemon                |
+| `npm run swagger`    | Gera o `swagger-output.json` a partir das anotações nas rotas |
+| `npm test`           | Roda a suíte Jest + Supertest                                 |
+| `npm run test:watch` | Testes em modo observação                                     |
+| `npm run seed`       | Recria o banco com dados de demonstração                      |
+| `npm run lint`       | Verifica o código com ESLint                                  |
+| `npm run lint:fix`   | Corrige automaticamente o que for possível                    |
+| `npm run format`     | Formata o projeto com Prettier                                |
 
 ---
 
@@ -125,6 +128,7 @@ etapas — concluir algo que nunca foi iniciado, reiniciar algo já concluído �
 | Método   | Rota                    | Descrição                      | Sucesso |
 | -------- | ----------------------- | ------------------------------ | ------- |
 | `GET`    | `/`                     | Informações da API             | 200     |
+| `GET`    | `/api-docs`             | Documentação interativa        | 200     |
 | `POST`   | `/usuarios`             | Cria um usuário                | 201     |
 | `GET`    | `/usuarios`             | Lista os usuários              | 200     |
 | `GET`    | `/usuarios/:id/tarefas` | Lista as tarefas de um usuário | 200     |
@@ -140,7 +144,8 @@ etapas — concluir algo que nunca foi iniciado, reiniciar algo já concluído �
 
 | Status | Quando acontece                                                                |
 | ------ | ------------------------------------------------------------------------------ |
-| `400`  | Dado inválido: título vazio, e-mail malformado, e-mail já cadastrado           |
+| `400`  | Falha de validação estrutural do corpo (Zod), com o detalhamento por campo     |
+| `400`  | Dado inválido para o domínio: e-mail já cadastrado, título vazio no `PUT`      |
 | `400`  | Regra de negócio violada: limite de 5 atingido ou transição de status inválida |
 | `404`  | Tarefa ou usuário inexistente                                                  |
 | `500`  | Erro inesperado                                                                |
@@ -209,6 +214,79 @@ uma regra de aplicação (depende de consultar outras tarefas), enquanto _de qua
 
 ---
 
+## Documentação interativa (Swagger)
+
+Com a API no ar, a documentação fica em **`http://localhost:3000/api-docs`**: as rotas aparecem
+agrupadas nas tags `Usuários` e `Tarefas`, com o corpo esperado, os exemplos de resposta e as regras
+de negócio de cada endpoint.
+
+A geração é automática, a partir das anotações no próprio código:
+
+```bash
+npm run swagger
+```
+
+O comando executa o [`swagger.js`](swagger.js) da raiz, que usa o **swagger-autogen** para ler as
+rotas e combiná-las com as informações declaradas ali (título, host, tags e os schemas
+reutilizáveis), produzindo o `swagger-output.json`. O `npm run dev` já regera antes de subir o
+servidor. O arquivo gerado vem versionado, então um clone consegue abrir o `/api-docs` sem precisar
+gerar nada antes.
+
+### Onde ficam as anotações, e por quê
+
+As anotações `#swagger` estão nos **arquivos de rota** ([`tarefaRoutes.js`](src/interfaces/routes/tarefaRoutes.js)
+e [`usuarioRoutes.js`](src/interfaces/routes/usuarioRoutes.js)), e não nos controllers.
+
+O motivo é concreto: o swagger-autogen faz análise **estática** do código. Nas rotas deste projeto o
+handler é `tarefaController.criar`, onde `tarefaController` é um _parâmetro de função_ que só existe
+em tempo de execução, injetado pelo composition root em [`src/app.js`](src/app.js). Nenhum
+analisador estático consegue seguir daí até o arquivo do controller. Anotar nas rotas mantém a
+documentação funcionando sem abrir mão da injeção de dependência — as anotações continuam na camada
+`interfaces`, ao lado dos controllers.
+
+---
+
+## Validação de entrada (Zod)
+
+O projeto valida a entrada em **duas camadas complementares**, não redundantes:
+
+| Camada                                       | Pergunta que responde                          | Exemplo                                             |
+| -------------------------------------------- | ---------------------------------------------- | --------------------------------------------------- |
+| **Zod**, na fronteira HTTP (`interfaces`)    | O payload tem o formato certo? Os tipos batem? | `nome` tem 3+ caracteres? `email` parece um e-mail? |
+| **Entidade**, no domínio (`domain/entities`) | Os invariantes de negócio valem?               | Esta tarefa pode sair do status em que está?        |
+
+O middleware [`validarCorpo.js`](src/interfaces/middlewares/validarCorpo.js) é uma fábrica: recebe um
+schema e devolve o middleware do Express já amarrado a ele.
+
+```js
+router.post('/', validarCorpo(criarTarefaSchema), tarefaController.criar);
+```
+
+Quando o corpo é reprovado, a resposta é `400` com o detalhamento por campo:
+
+```json
+{
+  "erro": "Dados inválidos.",
+  "detalhes": [
+    { "campo": "nome", "mensagem": "O nome deve ter no mínimo 3 caracteres." },
+    { "campo": "email", "mensagem": "E-mail em formato inválido." }
+  ]
+}
+```
+
+Quando o corpo é aprovado, o middleware substitui o `req.body` pelo dado **já normalizado** pelo
+schema: strings sem espaços nas pontas, números convertidos e campos desconhecidos descartados.
+
+Os schemas estão em [`src/interfaces/middlewares/schemas/`](src/interfaces/middlewares/schemas) e a
+validação é aplicada nas rotas de `POST`. O `PUT /tarefas/:id` continua validado pelo domínio.
+
+> **Sobre o Zod estar em `dependencies`:** o enunciado da atividade sugere instalá-lo com
+> `--save-dev`, mas o middleware o importa a cada requisição — é código de runtime. Em
+> `devDependencies`, um `npm install --omit=dev` derrubaria a API. O `swagger-autogen`, esse sim, é
+> dependência de desenvolvimento legítima: só roda para gerar o arquivo, nunca durante a execução.
+
+---
+
 ## Testes
 
 ```bash
@@ -217,6 +295,8 @@ npm test
 
 - `tests/unit/` — entidades de domínio isoladas, sem banco e sem HTTP.
 - `tests/integration/roteiroFase7.test.js` — o roteiro de validação completo via Supertest.
+- `tests/integration/validacaoEDocumentacao.test.js` — a validação do Zod campo a campo e o
+  conteúdo do `swagger-output.json`, incluindo a documentação da regra de negócio.
 
 Os testes de integração rodam contra um **SQLite em memória** (o Jest define `NODE_ENV=test`),
 então não encostam no `database.sqlite` de desenvolvimento.

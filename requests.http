@@ -209,3 +209,61 @@ GET {{baseUrl}}/tarefas/{{tarefa6.response.body.id}}
 
 ### Erro esperado: apagar tarefa inexistente              (esperado: 404)
 DELETE {{baseUrl}}/tarefas/9999
+
+
+###############################################################################
+# VALIDAÇÃO DE ENTRADA (Zod)
+# O middleware barra o corpo mal formatado antes de chegar ao controller e
+# devolve 400 com o detalhamento de cada campo reprovado.
+###############################################################################
+
+### Nome curto demais e e-mail inválido            (esperado: 400, dois campos)
+POST {{baseUrl}}/usuarios
+Content-Type: {{contentType}}
+
+{
+  "nome": "Ab",
+  "email": "isto-nao-e-um-email"
+}
+
+### Corpo vazio                                    (esperado: 400, nome e email)
+POST {{baseUrl}}/usuarios
+Content-Type: {{contentType}}
+
+{}
+
+### Tarefa sem título                              (esperado: 400, campo titulo)
+POST {{baseUrl}}/tarefas
+Content-Type: {{contentType}}
+
+{
+  "descricao": "Esqueci o título",
+  "usuarioId": 1
+}
+
+### usuarioId não numérico                         (esperado: 400, campo usuarioId)
+POST {{baseUrl}}/tarefas
+Content-Type: {{contentType}}
+
+{
+  "titulo": "Tarefa válida",
+  "usuarioId": "abc"
+}
+
+### Campos desconhecidos são descartados           (esperado: 201 sem "admin")
+POST {{baseUrl}}/usuarios
+Content-Type: {{contentType}}
+
+{
+  "nome": "  Elisa Rocha  ",
+  "email": "elisa.rocha@exemplo.com",
+  "admin": true
+}
+
+
+###############################################################################
+# DOCUMENTAÇÃO
+###############################################################################
+
+### Interface do Swagger                           (abra no navegador)
+GET {{baseUrl}}/api-docs/

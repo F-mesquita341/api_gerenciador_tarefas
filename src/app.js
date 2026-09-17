@@ -93,11 +93,23 @@ let documentacao = null;
 try {
   documentacao = require('../swagger-output.json');
 } catch {
-  console.warn('[swagger] swagger-output.json não encontrado. Rode `npm run swagger` para gerá-lo.');
+  console.warn(
+    '[swagger] swagger-output.json não encontrado. Rode `npm run swagger` para gerá-lo.'
+  );
 }
 
 if (documentacao) {
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(documentacao));
+  app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(documentacao, {
+      customSiteTitle: 'API de Gerenciamento de Tarefas - Documentação',
+      // deepLinking dá a cada endpoint uma URL própria (ex.:
+      // /api-docs/#/Tarefas/post_tarefas__id__iniciar), útil para apontar
+      // direto para a rota que se quer mostrar.
+      swaggerOptions: { deepLinking: true },
+    })
+  );
 } else {
   app.use('/api-docs', (req, res) => {
     res.status(503).json({
