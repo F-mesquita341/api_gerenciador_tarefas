@@ -1,0 +1,24 @@
+# Dependências
+node_modules/
+
+# Banco de dados local gerado pelo Sequelize
+*.sqlite
+*.sqlite3
+*.db
+
+# Cobertura de testes
+coverage/
+
+# Variáveis de ambiente
+.env
+.env.*
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema operacional / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
