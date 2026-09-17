@@ -282,3 +282,13 @@ simplesmente `npm start`, que recria as tabelas vazias).
 | Testes          | Jest + Supertest    |
 | Qualidade       | ESLint + Prettier   |
 | Desenvolvimento | Nodemon             |
+
+---
+
+## Autores
+
+- Felipe Mesquita Pinto
+- Wheverson de Abreu Lima
+
+Projeto desenvolvido como atividade de laboratório: construção de uma API RESTful aplicando
+Clean Architecture.

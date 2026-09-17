@@ -21,7 +21,7 @@
     "sqlite",
     "clean-architecture"
   ],
-  "author": "",
+  "author": "Felipe Mesquita Pinto <mesquitafelipe409@gmail.com>",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
@@ -40,5 +40,9 @@
   },
   "engines": {
     "node": ">=20.17.0"
-  }
+  },
+  "contributors": [
+    "Felipe Mesquita Pinto",
+    "Wheverson de Abreu Lima"
+  ]
 }
