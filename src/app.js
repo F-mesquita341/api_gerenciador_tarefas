@@ -1,4 +1,5 @@
 const express = require('express');
+const swaggerUi = require('swagger-ui-express');
 
 const { UsuarioModel, TarefaModel } = require('./infrastructure/database');
 const TarefaRepository = require('./infrastructure/repositories/TarefaRepository');
@@ -76,12 +77,34 @@ app.get('/', (req, res) => {
   res.status(200).json({
     api: 'Gerenciador de Tarefas',
     versao: '1.0.0',
+    documentacao: '/api-docs',
     rotas: ['/usuarios', '/usuarios/:id/tarefas', '/tarefas', '/tarefas/:id/iniciar'],
   });
 });
 
 app.use('/usuarios', usuarioRoutes(usuarioController));
 app.use('/tarefas', tarefaRoutes(tarefaController));
+
+// Documentação interativa. O swagger-output.json é gerado por `npm run swagger`
+// e vem versionado, mas a API não pode depender dele para subir: se o arquivo
+// faltar, /api-docs explica o que fazer e o resto continua funcionando.
+let documentacao = null;
+
+try {
+  documentacao = require('../swagger-output.json');
+} catch {
+  console.warn('[swagger] swagger-output.json não encontrado. Rode `npm run swagger` para gerá-lo.');
+}
+
+if (documentacao) {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(documentacao));
+} else {
+  app.use('/api-docs', (req, res) => {
+    res.status(503).json({
+      erro: 'Documentação ainda não gerada. Execute `npm run swagger` e reinicie o servidor.',
+    });
+  });
+}
 
 // Rota inexistente
 app.use((req, res) => {

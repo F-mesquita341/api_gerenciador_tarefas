@@ -1,0 +1,310 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "API de Gerenciamento de Tarefas",
+    "description": "API RESTful construída com Clean Architecture (Express + Sequelize + SQLite). Gerencia usuários e suas tarefas, aplicando a regra de negócio que limita cada usuário a no máximo 5 tarefas simultâneas com status EM_ANDAMENTO.",
+    "version": "1.0.0"
+  },
+  "host": "localhost:3000",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "Usuários",
+      "description": "Cadastro e consulta de usuários, os donos das tarefas."
+    },
+    {
+      "name": "Tarefas",
+      "description": "CRUD de tarefas e as transições de estado PENDENTE -> EM_ANDAMENTO -> CONCLUIDA."
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/usuarios/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/usuarios/{id}/tarefas": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/tarefas/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/tarefas/{id}": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/tarefas/{id}/iniciar": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/tarefas/{id}/concluir": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Usuario": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 1
+        },
+        "nome": {
+          "type": "string",
+          "example": "Ana Souza"
+        },
+        "email": {
+          "type": "string",
+          "example": "ana.souza@exemplo.com"
+        }
+      }
+    },
+    "NovoUsuario": {
+      "type": "object",
+      "properties": {
+        "nome": {
+          "type": "string",
+          "example": "Ana Souza"
+        },
+        "email": {
+          "type": "string",
+          "example": "ana.souza@exemplo.com"
+        }
+      },
+      "required": [
+        "nome",
+        "email"
+      ]
+    },
+    "Tarefa": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 1
+        },
+        "titulo": {
+          "type": "string",
+          "example": "Modelar o banco de dados"
+        },
+        "descricao": {
+          "type": "string",
+          "example": "Definir as tabelas de usuários e tarefas"
+        },
+        "status": {
+          "type": "string",
+          "example": "PENDENTE"
+        },
+        "usuarioId": {
+          "type": "number",
+          "example": 1
+        }
+      }
+    },
+    "NovaTarefa": {
+      "type": "object",
+      "properties": {
+        "titulo": {
+          "type": "string",
+          "example": "Modelar o banco de dados"
+        },
+        "descricao": {
+          "type": "string",
+          "example": "Definir as tabelas de usuários e tarefas"
+        },
+        "usuarioId": {
+          "type": "number",
+          "example": 1
+        }
+      },
+      "required": [
+        "titulo",
+        "usuarioId"
+      ]
+    },
+    "AtualizarTarefa": {
+      "type": "object",
+      "properties": {
+        "titulo": {
+          "type": "string",
+          "example": "Modelar o banco de dados - revisado"
+        },
+        "descricao": {
+          "type": "string",
+          "example": "Nova descrição da tarefa"
+        }
+      }
+    },
+    "ListaDeTarefas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "titulo": {
+            "type": "string",
+            "example": "Modelar o banco de dados"
+          },
+          "descricao": {
+            "type": "string",
+            "example": "Definir as tabelas de usuários e tarefas"
+          },
+          "status": {
+            "type": "string",
+            "example": "PENDENTE"
+          },
+          "usuarioId": {
+            "type": "number",
+            "example": 1
+          }
+        }
+      }
+    },
+    "ListaDeUsuarios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "nome": {
+            "type": "string",
+            "example": "Ana Souza"
+          },
+          "email": {
+            "type": "string",
+            "example": "ana.souza@exemplo.com"
+          }
+        }
+      }
+    },
+    "Erro": {
+      "type": "object",
+      "properties": {
+        "erro": {
+          "type": "string",
+          "example": "Tarefa 42 não encontrada."
+        }
+      }
+    },
+    "ErroDeValidacao": {
+      "type": "object",
+      "properties": {
+        "erro": {
+          "type": "string",
+          "example": "Dados inválidos."
+        },
+        "detalhes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "campo": {
+                "type": "string",
+                "example": "titulo"
+              },
+              "mensagem": {
+                "type": "string",
+                "example": "O título da tarefa é obrigatório."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
